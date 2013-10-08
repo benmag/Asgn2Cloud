@@ -1,34 +1,244 @@
+<!DOCTYPE html>
 <html>
 <head>
-	<title></title>
-	<script src="node/socket.io/socket.io.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-</head>
+<title>Twitter Stream</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Bootstrap -->
+<link href="css/bootstrap.css" rel="stylesheet" media="screen">
+<script src="node/socket.io/socket.io.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<style>
+
+ article, aside, figure, footer, header, hgroup, 
+menu, nav, section { display: block; }
+
+
+body {
+    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+
+.tweets p {
+	font: 16px/1.4 Arial, sans-serif;
+    margin: 0 0 1em;
+}
+
+.comment {
+    overflow: hidden;
+    padding: 0 0 1em;
+    border-bottom: 1px solid #ddd;
+    margin: 0 0 1em;
+    *zoom: 1;
+}
+
+.comment-img {
+    float: left;
+    margin-right: 33px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.comment-img img {
+    display: block;
+    width:50px;
+    height:50px;
+    background: url('img/loading.gif') no-repeat;
+    background-position: center center;
+}
+
+.comment-body {
+    overflow: hidden;
+}
+
+.comment .text {
+    padding: 10px;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    background: #fff;
+}
+
+.comment .text p:last-child {
+    margin: 0;
+}
+
+.comment .attribution {
+    margin: 0.5em 0 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Decoration */
+
+.comments,
+.comment {
+    position: relative;
+}
+
+.comments:before,
+.comment:before,
+.comment .text:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 65px;
+}
+
+.comments:before {
+    width: 3px;
+    top: -20px;
+    bottom: -20px;
+    background: rgba(0,0,0,0.1);
+}
+
+.comment:before {
+    width: 9px;
+    height: 9px;
+    border: 3px solid #fff;
+    border-radius: 100px;
+    margin: 16px 0 0 -6px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.2), inset 0 1px 1px rgba(0,0,0,0.1);
+    background: #ccc;
+}
+
+.comment:hover:before {
+    background: orange;
+}
+
+.comment .text:before {
+    top: 18px;
+    left: 78px;
+    width: 9px;
+    height: 9px;
+    border-width: 0 0 1px 1px;
+    border-style: solid;
+    border-color: #e5e5e5;
+    background: #fff;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+}
+</style>
+<link href="css/bootstrap-responsive.css" rel="stylesheet"></head>
 <body>
-<div id="local-tweet-container">
-	<ul class="tweets" style="height: 400; overflow: scroll;"></ul>
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a class="brand" href="index.html">Twitter Stream</a>
+		
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<li id="query_box" style="display:none; background-color:#f2f2f2; min-width:100px;"><a href="index.html" style=" color: #000; "><i class="icon-remove" style="margin-right:10px;"></i><span id="query">Test</span></a></li>
+
+					<input type="text" id="small_search" placeholder="Enter hashtag or search query" style="margin-bottom:2px; margin-top: 5px;width: 0px; margin-bottom:2px; margin-top: 5px; display:none;" />
+				</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+	</div>
 </div>
 
+	<div class="container-fluid" id="stream_container" style="position:relative;">
+  		<div class="row-fluid">
+  			<div id="search_container" class="span6 well" style="margin: 0 auto; float:none;">
+				<h2>Enter hashtag or search query</h2>
+				<input class="span12" id="streamName" type="text" value="" />
+				<button class="btn btn-block btn-primary" type="button" onclick="loadStream();">Launch</button>
+    		</div>
+        </div>
 
-<script type="text/javascript">
+        <div class="row-fluid" style="padding-top: 20px;">
+        	<!-- news feed design thanks to: http://jsfiddle.net/necolas/vhZds/ -->
+        	<div id="local-tweet-container">
+        		<section class="tweets comments span8" style="margin:0 auto; float:none; display:none;">
 
-	$(document).ready(function() {
-		var $container = $('ul.tweets'),
-			socket = io.connect('http://ec2-54-200-86-184.us-west-2.compute.amazonaws.com:8080'),
-			template = $('#tweetTemplate');
+        		</section>
+			</div>
+        </div>
+    </div>
+	
+	<div class="content">
+	    <footer style="padding-top:15px;">
+	        <hr>
+	        <p class="pull-right">&copy; Ben Maggacis</p>
+	    </footer>
+    </div>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+
+    	var socket = io.connect('http://ec2-54-200-86-184.us-west-2.compute.amazonaws.com:8080');
+
+    	var streamName = window.location.hash;
+    	var streamURI = '#/s/';
+    	
+   		// If we have stream selected, load that puppy up!
+		if(streamName != "" && streamName.indexOf(streamURI) >= 0) {
+			// Connect to stream
+			connectStream(streamName.substr(streamName.indexOf(streamURI)+streamURI.length));
+		} 
+
+
+    	function loadStream() {
+
+			streamName = $("#streamName").val();
+			if(streamName != "") {
+				window.location.replace(window.location.origin+'/#/s/' + streamName);
+				connectStream(streamName);
+			}
+
+			return false;
+		}
+
+		function connectStream(stream) {
+			$("#search_container").hide();
+			$("#query_box").show();
+			$(".tweets").show();
+			$("#query").html(stream);
 			
- 
-	    socket.on('twitter', function(data) {
-	    	console.debug(data);
-	    	$('.tweets').prepend('<li>' + data.text + '</li>');
-	        //$container.append(template.render(data));
-	    });
-	});
+			$("#search_container").hide();
+
+			// Connect to stream
+			socket.emit('track_stream', stream);  
+		    
+		    // Handle tweets returned to us
+		    socket.on(stream, function(data) {
+		    	console.debug(data);
+
+
+	      		$('.tweets').prepend("<article class=\"comment\">\
+			      <a class=\"comment-img\" href=\"#non\">\
+			        <img src=\""+data.user.profile_image_url+"\" alt=\"\" width=\"50\" height=\"50\">\
+			      </a>\
+			      <div class=\"comment-body\">\
+			        <div class=\"text\">\
+			          <p>"+data.text+"</p>\
+			        </div>\
+			        <p class=\"attribution\">by <a href=\"#non\">"+data.user.name+"</a> at "+data.created_at+"</p>\
+			      </div>\
+			    </article>\
+			  </section>");
+
+      		});
+
+		}
+
+
+		// If enter is pressed in the searchbox
+		$('#streamName').keydown(function (e){
+		    if(e.keyCode == 13){
+		        loadStream();
+		    }
+		})
 
 
 
-</script>
-
+    </script>
 </body>
 </html>
-

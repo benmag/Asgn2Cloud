@@ -30,11 +30,24 @@ function handler (req, res) {
 }
 
 io.sockets.on('connection', function(socket) {
-  twit.stream('statuses/filter', {'track':'#SingleBecause'},
-    function(stream) {
+
+  // Handle client request join channel and track stream
+  socket.on('track_stream', function(streamName) {
+    socket.join(streamName);
+
+    // Make connection to twitter stream
+    twit.stream('statuses/filter', {'track':streamName}, function(stream) {
+        
+      var streamCallBack = stream;
+        
+      //When we recieve a tweet
       stream.on('data',function(data){
-        socket.emit('twitter',data);
+        socket.emit(streamName,data); // Send it through to the streams channel 
       });
+
     });
+
+  });
+
 });
 

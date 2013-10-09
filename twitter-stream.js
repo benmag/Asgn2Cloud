@@ -1,5 +1,6 @@
 // NODEJS TWITTER STREAM 
 // Source: https://github.com/tariknz/nodejs-twitter-stream
+// Utilizes: https://npmjs.org/package/twitter
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs'), twitter = require('ntwitter')

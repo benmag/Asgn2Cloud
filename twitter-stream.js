@@ -3,7 +3,9 @@
 // Utilizes: https://npmjs.org/package/twitter
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
-  , fs = require('fs'), twitter = require('ntwitter')
+  , fs = require('fs')
+  , twitter = require('ntwitter')
+  , request = require('request')
   , util = require('util');
 
 
@@ -43,12 +45,34 @@ io.sockets.on('connection', function(socket) {
         
       //When we recieve a tweet
       stream.on('data',function(data){
-        socket.emit(streamName,data); // Send it through to the streams channel 
-      });
+
+        request({
+          uri: "http://54.200.86.184/test.php",
+          method: "POST",
+          form: {
+            message: data.text
+          }
+        }, function(error, response, body) {
+            
+            // Create new object to return with the sentiment value included
+            var parsedTweet = {
+              'sentiment'   : body, 
+              'text'        : data.text,
+              'created_at'  : data.created_at,
+              'screen_name' : 'DICKHEAD',
+              'name'        : data.user.name, 
+              'profile_image_url' : data.user.profile_image_url
+            };
+
+            console.log(data);
+            socket.emit(streamName,parsedTweet);
+        });
+
+        //socket.emit(streamName, data);
+      })
 
     });
 
   });
 
 });
-

@@ -21,7 +21,7 @@ body {
 
 
 .tweets p {
-	font: 16px/1.4 Arial, sans-serif;
+    font: 16px/1.4 Arial, sans-serif;
     margin: 0 0 1em;
 }
 
@@ -114,128 +114,140 @@ body {
     border-width: 0 0 1px 1px;
     border-style: solid;
     border-color: #e5e5e5;
-    background: #fff;
+    /*background: #fff;*/
     -webkit-transform: rotate(45deg);
     -moz-transform: rotate(45deg);
     -ms-transform: rotate(45deg);
     -o-transform: rotate(45deg);
 }
+
+.positive .text { 
+background-color: #8AE68A;
+}
+
+.negative .text {
+    background-color: #FF7A7A;
+}
+
+.neutral .text {
+    background-color: #ccc;
+}
 </style>
 <link href="css/bootstrap-responsive.css" rel="stylesheet"></head>
 <body>
 <div class="navbar navbar-inverse navbar-fixed-top">
-	<div class="navbar-inner">
-		<div class="container">
-			<button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			
-			<a class="brand" href="index.html">Twitter Stream</a>
-		
-			<div class="nav-collapse collapse">
-				<ul class="nav">
-					<li id="query_box" style="display:none; background-color:#f2f2f2; min-width:100px;"><a href="index.html" style=" color: #000; "><i class="icon-remove" style="margin-right:10px;"></i><span id="query">Test</span></a></li>
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+            <a class="brand" href="index.html">Twitter Stream</a>
+        
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li id="query_box" style="display:none; background-color:#f2f2f2; min-width:100px;"><a href="index.html" style=" color: #000; "><i class="icon-remove" style="margin-right:10px;"></i><span id="query">Test</span></a></li>
 
-					<input type="text" id="small_search" placeholder="Enter hashtag or search query" style="margin-bottom:2px; margin-top: 5px;width: 0px; margin-bottom:2px; margin-top: 5px; display:none;" />
-				</ul>
-			</div><!--/.nav-collapse -->
-		</div>
-	</div>
+                    <input type="text" id="small_search" placeholder="Enter hashtag or search query" style="margin-bottom:2px; margin-top: 5px;width: 0px; margin-bottom:2px; margin-top: 5px; display:none;" />
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
 </div>
 
-	<div class="container-fluid" id="stream_container" style="position:relative;">
-  		<div class="row-fluid">
-  			<div id="search_container" class="span6 well" style="margin: 0 auto; float:none;">
-				<h2>Enter hashtag or search query</h2>
-				<input class="span12" id="streamName" type="text" value="" />
-				<button class="btn btn-block btn-primary" type="button" onclick="loadStream();">Launch</button>
-    		</div>
+    <div class="container-fluid" id="stream_container" style="position:relative;">
+        <div class="row-fluid">
+            <div id="search_container" class="span6 well" style="margin: 0 auto; float:none;">
+                <h2>Enter hashtag or search query</h2>
+                <input class="span12" id="streamName" type="text" value="" />
+                <button class="btn btn-block btn-primary" type="button" onclick="loadStream();">Launch</button>
+            </div>
         </div>
 
         <div class="row-fluid" style="padding-top: 20px;">
-        	<!-- news feed design thanks to: http://jsfiddle.net/necolas/vhZds/ -->
-        	<div id="local-tweet-container">
-        		<section class="tweets comments span8" style="margin:0 auto; float:none; display:none;">
+            <!-- news feed design thanks to: http://jsfiddle.net/necolas/vhZds/ -->
+            <div id="local-tweet-container">
+                <section class="tweets comments span8" style="margin:0 auto; float:none; display:none;">
 
-        		</section>
-			</div>
+                </section>
+            </div>
         </div>
     </div>
-	
-	<div class="content">
-	    <footer style="padding-top:15px;">
-	        <hr>
-	        <p class="pull-right">&copy; Ben Maggacis</p>
-	    </footer>
+    
+    <div class="content">
+        <footer style="padding-top:15px;">
+            <hr>
+            <p class="pull-right">&copy; Ben Maggacis</p>
+        </footer>
     </div>
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-    	var socket = io.connect('http://ec2-54-200-86-184.us-west-2.compute.amazonaws.com:8080');
+        var socket = io.connect('http://ec2-54-200-86-184.us-west-2.compute.amazonaws.com:8080');
 
-    	var streamName = window.location.hash;
-    	var streamURI = '#/s/';
-    	
-   		// If we have stream selected, load that puppy up!
-		if(streamName != "" && streamName.indexOf(streamURI) >= 0) {
-			// Connect to stream
-			connectStream(streamName.substr(streamName.indexOf(streamURI)+streamURI.length));
-		} 
-
-
-    	function loadStream() {
-
-			streamName = $("#streamName").val();
-			if(streamName != "") {
-				window.location.replace(window.location.origin+'/#/s/' + streamName);
-				connectStream(streamName);
-			}
-
-			return false;
-		}
-
-		function connectStream(stream) {
-			$("#search_container").hide();
-			$("#query_box").show();
-			$(".tweets").show();
-			$("#query").html(stream);
-			
-			$("#search_container").hide();
-
-			// Connect to stream
-			socket.emit('track_stream', stream);  
-		    
-		    // Handle tweets returned to us
-		    socket.on(stream, function(data) {
-		    	console.debug(data);
+        var streamName = window.location.hash;
+        var streamURI = '#/s/';
+        
+        // If we have stream selected, load that puppy up!
+        if(streamName != "" && streamName.indexOf(streamURI) >= 0) {
+            // Connect to stream
+            connectStream(streamName.substr(streamName.indexOf(streamURI)+streamURI.length));
+        } 
 
 
-	      		$('.tweets').prepend("<article class=\"comment\">\
-			      <a class=\"comment-img\" href=\"http://twitter.com/"+data.user.screen_name+"\">\
-			        <img src=\""+data.user.profile_image_url+"\" alt=\"\" width=\"50\" height=\"50\">\
-			      </a>\
-			      <div class=\"comment-body\">\
-			        <div class=\"text\">\
-			          <p>"+data.text+"</p>\
-			        </div>\
-			        <p class=\"attribution\">by <a href=\"http://twitter.com/"+data.user.screen_name+"\">"+data.user.name+"</a> at "+data.created_at+"</p>\
-			      </div>\
-			    </article>\
-			  </section>");
+        function loadStream() {
 
-      		});
+            streamName = $("#streamName").val();
+            if(streamName != "") {
+                window.location.replace(window.location.origin+'/#/s/' + streamName);
+                connectStream(streamName);
+            }
 
-		}
+            return false;
+        }
+
+        function connectStream(stream) {
+            $("#search_container").hide();
+            $("#query_box").show();
+            $(".tweets").show();
+            $("#query").html(stream);
+            
+            $("#search_container").hide();
+
+            // Connect to stream
+            socket.emit('track_stream', stream);  
+            
+            // Handle tweets returned to us
+            socket.on(stream, function(data) {
+                console.debug(data);
 
 
-		// If enter is pressed in the searchbox
-		$('#streamName').keydown(function (e){
-		    if(e.keyCode == 13){
-		        loadStream();
-		    }
-		})
+                $('.tweets').prepend("<article class=\"comment "+data.sentiment+"\">\
+                  <a class=\"comment-img\" href=\"http://twitter.com/"+data.screen_name+"\">\
+                    <img src=\""+data.profile_image_url+"\" alt=\"\" width=\"50\" height=\"50\">\
+                  </a>\
+                  <div class=\"comment-body\">\
+                    <div class=\"text\">\
+                      <p>"+data.text+"</p>\
+                    </div>\
+                    <p class=\"attribution\">by <a href=\"http://twitter.com/"+data.screen_name+"\">"+data.name+"</a> at "+data.created_at+"</p>\
+                  </div>\
+                </article>\
+              </section>");
+
+            });
+
+        }
+
+
+        // If enter is pressed in the searchbox
+        $('#streamName').keydown(function (e){
+            if(e.keyCode == 13){
+                loadStream();
+            }
+        })
 
 
 

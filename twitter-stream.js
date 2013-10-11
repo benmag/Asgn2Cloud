@@ -60,50 +60,39 @@ io.sockets.on('connection', function(socket) {
 
 
             // Tweet recieved
-            stream.on('data',function(data){
+            stream.on('data',function(data) {
 
-                // Tweet recieved, analyse sentiment 
-                request({
-                  uri: "http://54.200.160.95/test.php",
-                  method: "POST",
-                  form: {
-                    message: data.text
-                  }
-                }, function(error, response, body) {
-                    
-                    // Create new object to return with the sentiment value included
-                    var twitter_username = data.user.name;
-                    var parsedTweet = {
-                      'sentiment'   : body, 
-                      'text'        : data.text,
-                      'created_at'  : data.created_at,
-                      'screen_name' : 'DICKHEAD',
-                      'name'        : data.user.name, 
-                      'profile_image_url' : data.user.profile_image_url
-                    };
+                // Only parse tweets, not retweets and replies
+                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
+                    // Tweet recieved, analyse sentiment 
+                    request({
+                      uri: "http://54.200.160.95/test.php",
+                      method: "POST",
+                      form: {
+                        message: data.text
+                      }
+                        
+                    }, function(error, response, body) {
 
-                    socket.broadcast.emit('twitter', parsedTweet);
+                        // Create new object to return with the sentiment value included
+                        var parsedTweet = {
+                          'sentiment'   : body, 
+                          'text'        : data.text,
+                          'created_at'  : data.created_at,
+                          'screen_name' : data.user.screen_name,
+                          'name'        : data.user.name, 
+                          'profile_image_url' : data.user.profile_image_url
+                        };
 
-                });
+                        socket.broadcast.emit('twitter', parsedTweet);
 
-                /*var parsedTweet = {
-                  'sentiment'   : 'neutral', 
-                  'text'        : data.text,
-                  'created_at'  : data.created_at,
-                  'screen_name' : 'DICKHEAD',
-                  'name'        : data.user.name, 
-                  'profile_image_url' : data.user.profile_image_url
-                };*/
+                    });
+                } else {
+                    //console.log("Rejected   ")
+                }
 
-                
-            })
-
+            });
         });
-
-
-        /*if(watchList == "##STOP##") {
-            currentTwitStream);
-        }, 1000);*/
 
     });
 

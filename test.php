@@ -1,6 +1,15 @@
 <?php
+$url = 'http://sentiment.vivekn.com/web/text/';
+$myvars = 'txt='.urlencode($_REQUEST['message']);
 
-$request = "http://access.alchemyapi.com/calls/text/TextGetTextSentiment?apikey=1bab760eeacc00230522c325b0435fae1b7c75f9&text=" . urlencode($_POST["message"]) . "&outputMode=json";
-$response = json_decode(file_get_contents($request));
+$ch = curl_init( $url );
+curl_setopt( $ch, CURLOPT_POST, 1);
+curl_setopt( $ch, CURLOPT_POSTFIELDS, $myvars);
+curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt( $ch, CURLOPT_HEADER, 0);
+curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
 
-echo $response->docSentiment->type;
+$response = curl_exec( $ch );
+echo $response['result'];
+
+?>

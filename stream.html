@@ -14,7 +14,7 @@
 
 	$(document).ready(function() {
 		var $container = $('ul.tweets'),
-			socket = io.connect('http://ec2-54-200-86-184.us-west-2.compute.amazonaws.com:8080'),
+			socket = io.connect('http://54.200.86.66:8080/'),
 			template = $('#tweetTemplate');
 			
  		socket.emit('track_stream', 'Justin Bieber');  

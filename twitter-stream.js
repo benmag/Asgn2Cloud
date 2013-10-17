@@ -66,7 +66,7 @@ io.sockets.on('connection', function(socket) {
                 if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
                     // Tweet recieved, analyse sentiment 
                     request({
-                      uri: "http://54.200.160.95/test.php",
+                      uri: "http://54.200.86.66/test.php",
                       method: "POST",
                       form: {
                         message: data.text

@@ -184,7 +184,7 @@ background-color: #8AE68A;
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-        var socket = io.connect('http://54.200.160.95:8080');
+        var socket = io.connect('http://54.200.86.66:8080/');
         socket.on('twitter', function(data) {
 
             $('.tweets').prepend("<article class=\"comment "+data.sentiment+"\">\
@@ -199,6 +199,8 @@ background-color: #8AE68A;
               </div>\
             </article>\
           </section>");
+        
+        console.log(data.text + " " + data.sentiment);
 
             // Update the counts
             switch(data.sentiment) {

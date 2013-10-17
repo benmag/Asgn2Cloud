@@ -53,12 +53,12 @@
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-        var socket = io.connect('http://54.200.160.95:8080');
+        var socket = io.connect('http://54.200.86.66:8080/');
 
 
         function launchStream() {
 
-            console.log("Launch stream!");
+            console.log("Launch stream!!!");
             
             // Connect to stream;  
             socket.emit('open_stream', $("#streamName").val());  

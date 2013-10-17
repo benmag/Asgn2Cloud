@@ -1,9 +1,4 @@
 <?php
-ini_set('display_errors',1);
-ini_set('display_startup_errors',1);
-error_reporting(-1);
-
-echo "shds";
 $url = 'http://sentiment.vivekn.com/web/text/';
 $myvars = 'txt='.urlencode($_REQUEST['message']);
 

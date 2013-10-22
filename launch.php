@@ -3,76 +3,13 @@
 <html>
 <head>
 <title>Twitter Stream</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Bootstrap -->
-<link href="css/bootstrap.css" rel="stylesheet" media="screen">
-<script src="<?php echo NODE_ADDRESS; ?>socket.io/socket.io.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<style>
-</style>
-<link href="css/bootstrap-responsive.css" rel="stylesheet"></head>
+<?php include_once('./templates/head_tags.php'); ?>
+</head>
 <body>
-<div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container">
-            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            
-            <a class="brand" href="index.php">Twitter Stream</a>
-        
-            <div class="nav-collapse collapse">
-                <ul class="nav">
-                    <li><a href="launch.html">Stream Launcher</a></li>
-                </ul>
-            </div><!--/.nav-collapse -->
-        </div>
-    </div>
-</div>
-
-    <div class="container-fluid" id="stream_container" style="position:relative; margin-top:75px;">
-        <div class="row-fluid">
-            <div id="search_container" class="span6 well" style="margin: 0 auto; float:none;">
-                <h2>Enter hashtag or search query</h2>
-                <input class="span12" id="streamName" type="text" value="" />
-                <button class="btn btn-block btn-primary" type="button" onclick="launchStream();">Launch</button>
-                <hr />
-                <button id="closeStream" class="btn btn-block btn-danger" type="button" onclick="closeStream();">Terminate Stream</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="content">
-        <footer style="padding-top:15px;">
-            <hr>
-            <p class="pull-right">&copy; Ben Maggacis</p>
-        </footer>
-    </div>
-    <script src="js/bootstrap.min.js"></script>
-    <script type="text/javascript">
-
-        var socket = io.connect('<?php echo NODE_ADDRESS; ?>');
-
-
-        function launchStream() {
-
-            console.log("Launch stream!!!");
-            
-            // Connect to stream;  
-            socket.emit('open_stream', $("#streamName").val());  
-            $("#closeStream").show();
-
-        }
-
-        function closeStream() {
-
-            // Closing stream
-            socket.emit('close_stream');
-        }
-    </script>
+<?php include_once('./templates/menu.php'); ?>
+<?php include_once('./templates/launch_form.php'); ?> 
+<?php include_once('./templates/footer.php'); ?>
+<!-- Only connect to the twitter channel on the index page -->
+<script src="js/stream_manager.php"></script>
 </body>
 </html>

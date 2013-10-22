@@ -1,3 +1,4 @@
+<?php require_once('config.php'); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +8,7 @@
 
 <!-- Bootstrap -->
 <link href="css/bootstrap.css" rel="stylesheet" media="screen">
-<script src="socket.io/socket.io.js"></script>
+<script src="<?php echo NODE_ADDRESS; ?>socket.io/socket.io.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <style>
 
@@ -144,13 +145,11 @@ background-color: #8AE68A;
                 <span class="icon-bar"></span>
             </button>
             
-            <a class="brand" href="index.html">Twitter Stream</a>
+            <a class="brand" href="index.php">Twitter Stream</a>
         
             <div class="nav-collapse collapse">
                 <ul class="nav">
-                    <li id="query_box" style="display:none; background-color:#f2f2f2; min-width:100px;"><a href="index.html" style=" color: #000; "><i class="icon-remove" style="margin-right:10px;"></i><span id="query">Test</span></a></li>
-
-                    <input type="text" id="small_search" placeholder="Enter hashtag or search query" style="margin-bottom:2px; margin-top: 5px;width: 0px; margin-bottom:2px; margin-top: 5px; display:none;" />
+                    <li><a href="launch.html">Stream Launcher</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -184,7 +183,7 @@ background-color: #8AE68A;
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-        var socket = io.connect('http://54.200.86.66:8080/');
+        var socket = io.connect('<?php echo NODE_ADDRESS; ?>');
         socket.on('twitter', function(data) {
 
             $('.tweets').prepend("<article class=\"comment "+data.sentiment+"\">\

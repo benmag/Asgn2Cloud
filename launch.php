@@ -1,3 +1,4 @@
+<?php require_once('config.php'); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +8,7 @@
 
 <!-- Bootstrap -->
 <link href="css/bootstrap.css" rel="stylesheet" media="screen">
-<script src="socket.io/socket.io.js"></script>
+<script src="<?php echo NODE_ADDRESS; ?>socket.io/socket.io.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <style>
 </style>
@@ -22,10 +23,11 @@
                 <span class="icon-bar"></span>
             </button>
             
-            <a class="brand" href="index.html">Twitter Stream</a>
+            <a class="brand" href="index.php">Twitter Stream</a>
         
             <div class="nav-collapse collapse">
                 <ul class="nav">
+                    <li><a href="launch.html">Stream Launcher</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -53,7 +55,7 @@
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
 
-        var socket = io.connect('http://54.200.86.66:8080/');
+        var socket = io.connect('<?php echo NODE_ADDRESS; ?>');
 
 
         function launchStream() {

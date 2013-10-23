@@ -4,5 +4,4 @@
             <p class="pull-right">&copy; Ben Maggacis</p>
         </footer>
     </div>
-    <script src="js/bootstrap.min.js"></script>
     

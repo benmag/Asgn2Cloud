@@ -2,7 +2,7 @@
 Header("content-type: application/x-javascript");
 require_once('../config.php');
 ?>
-var socket = io.connect('<?php echo NODE_ADDRESS; ?>');
+var socket = io.connect('<?php echo NODE_SERVER; ?>');
 var tweetCount = 0;
 var tweetHistorySize = 100;
 
@@ -39,7 +39,6 @@ socket.on('twitter', function(data) {
 
 
   // Clear the tweet history after x new tweets. 
-
   // If the tweetCount is divisible by x, loop through and destory those tweets
   //tweetCount++; 
 

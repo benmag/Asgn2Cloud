@@ -1,23 +1,47 @@
+HOW IT WORKS:
+I have two types on instances: 
+	- Node Server
+	- Sentiment Processor(s) (these scale up/down)
+
+
+## FIRST 
+Install AWS Command Line tools: 
+http://alestic.com/2012/05/aws-command-line-packages
+
+
+## Create image of your primary sentiment instance (via the amazon site )
+## If you are using node and you need to launch at startup see: https://www.exratione.com/2013/02/nodejs-and-forever-as-a-service-simple-upstart-and-init-scripts-for-ubuntu/
+## In my setup, I didn't need anything like that ... i dont think 
+
 ## Setup a load balancer (do NOT tick 'creat internal facing LoadBalancer'). Add your main instance to the load balancer
 
 
-## -- Create launch config
-as-create-launch-config benV4-LC --image-id ami-0271e832 --instance-type t1.micro --key benm --group sg-c8ea1fa7  --region us-west-2
+## -- Create a launch config
+as-create-launch-config <<LAUNCH-CONFIG-NAME>> --image-id <<SENTIMENT_AMI_IMAGE>> --instance-type t1.micro --key <<ACCESSKEY>> --group <<SECURITY_GROUP>> --region us-west-2
 
 ## -- Create auto scaling group
-as-create-auto-scaling-group benV4-ASGroup --launch-configuration benV4-LC --availability-zones us-west-2a --min-size 1 --max-size 6 --grace-period 30 --desired-capacity 2 --load-balancers benV4-LB --health-check-type ELB --tag "k=Name,v=CloudComputing_child, p=true" --region us-west-2
+as-create-auto-scaling-group <<AUTOSCALEGROUPNAME>> --launch-configuration <<LAUNCH-CONFIG-NAME>> --availability-zones us-west-2a --min-size 1 --max-size 6 --grace-period 30 --desired-capacity 2 --load-balancers <<LOADBALANCERNAME(CREATED_VIA_AMAZON)>> --health-check-type ELB --tag "k=Name,v=<<WHAT_DO_YOU_WANT_TO_CALL_THE_SENTIMENT_PROCESSOR_INSANCES>>, p=true" --region us-west-2
+
 
 ## -- Setup Scaling policies 
-as-put-scaling-policy --auto-scaling-group benV4-ASGroup --name scale-up --adjustment 1 --type ChangeInCapacity --cooldown 60 --region us-west-2
-as-put-scaling-policy --auto-scaling-group benV4-ASGroup --name scale-dn --adjustment=-1 --type ChangeInCapacity --cooldown 60 --region us-west-2
+## Scale Up by adding one instance (this will output some crazy string thing, we need that!)
+as-put-scaling-policy --auto-scaling-group <<AUTOSCALEGROUPNAME>> --name scale-up --adjustment 1 --type ChangeInCapacity --cooldown 60 --region us-west-2
+
+## -- Create monitoring alarm for scaling up
+mon-put-metric-alarm <<SCALEUP_ALARM_NAME>> --comparison-operator GreaterThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace AWS/EC2 --period 60 --statistic Average --threshold 65 --actions-enabled true --dimensions "AutoScalingGroupName=<<AUTOSCALEGROUPNAME>>" --alarm-actions <<##COPY_AND_PASTE OUTPUT_FROM_SCALEUP_POLICY>> --alarm-description "Scale up at 65% load" --unit Percent --region us-west-2
 
 
-mon-put-metric-alarm benV4-ScaleUp --comparison-operator GreaterThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace AWS/EC2 --period 60 --statistic Average --threshold 65 --actions-enabled true --dimensions "AutoScalingGroupName=	benV4-ASGroup" --alarm-actions arn:aws:autoscaling:us-west-2:043994570350:scalingPolicy:0822ad3a-1558-47aa-b062-7f438c37007a:autoScalingGroupName/benV4-ASGroup:policyName/scale-up --alarm-description "Scale up at 65% load" --unit Percent --region us-west-2
+## Scale Down by removing one instance 
+as-put-scaling-policy --auto-scaling-group <<AUTOSCALEGROUPNAME>> --name scale-dn --adjustment=-1 --type ChangeInCapacity --cooldown 60 --region us-west-2
 
-mon-put-metric-alarm benV4-ScaleDown --comparison-operator LessThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace AWS/EC2 --period 60 --statistic Average --threshold 10 --actions-enabled true --dimensions "AutoScalingGroupName=benV4-ASGroup" --alarm-actions arn:aws:autoscaling:us-west-2:043994570350:scalingPolicy:1aad7ae8-a494-4c32-a45b-c7655aecba4f:autoScalingGroupName/benV4-ASGroup:policyName/scale-dn --alarm-description "Scale down at 10% load" --unit Percent --region us-west-2
+## -- Create monitoring alarm 
+mon-put-metric-alarm <<SCALEDOWN_ALARM_NAME>> --comparison-operator LessThanThreshold --evaluation-periods 1 --metric-name CPUUtilization --namespace AWS/EC2 --period 60 --statistic Average --threshold 10 --actions-enabled true --dimensions "AutoScalingGroupName=<<AUTOSCALEGROUPNAME>>" --alarm-actions <<##COPY_AND_PASTE OUTPUT_FROM_SCALEUP_POLICY>> --alarm-description "Scale down at 10% load" --unit Percent --region us-west-2
+
 
 ## It will probably throw up 2 new instances while the monitoring services get into gear 
 
-
 ## Go to the Amazon Web Service console and look at your load balancer
 ## Remove the main instance from the load balancer. We want to serve our website off of Auto Scaling instances, not a static server.
+
+
+## When you want something to be loadbalanced, point it to the loadbalancer DNS 

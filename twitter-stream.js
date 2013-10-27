@@ -6,7 +6,9 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
   , twitter = require('ntwitter')
   , request = require('request')
-  , util = require('util');
+  , util = require('util')
+  , $ = require('jquery');
+  
 
 
 var twit = new twitter({
@@ -58,7 +60,6 @@ io.sockets.on('connection', function(socket) {
             
             currentTwitStream = stream;
 
-
             // Tweet recieved
             stream.on('data',function(data) {
 
@@ -66,26 +67,31 @@ io.sockets.on('connection', function(socket) {
                 if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
                     // Tweet recieved, analyse sentiment 
                     request({
-                      uri: "http://benV6-LB-993839425.us-west-2.elb.amazonaws.com/test.php",
+                      uri: "http://joeBalance-80923684.us-west-2.elb.amazonaws.com/test.php",
                       method: "POST",
                       form: {
-                        message: data.text
+                        'text'        : data.text,
+                        'created_at'  : data.created_at,
+                        'screen_name' : data.user.screen_name,
+                        'name'        : data.user.name, 
+                        'profile_image_url' : data.user.profile_image_url,
+                        'searchTerm'  : watchList
                       }
                         
                     }, function(error, response, body) {
 
-                        // Create new object to return with the sentiment value included
-                        var parsedTweet = {
-                          'sentiment'   : body, 
-                          'text'        : data.text,
-                          'created_at'  : data.created_at,
-                          'screen_name' : data.user.screen_name,
-                          'name'        : data.user.name, 
-                          'profile_image_url' : data.user.profile_image_url
-                        };
+                       $.getJSON(body, function(tweet) {
+                            var parsedTweet = {
+                                'sentiment'   : tweet.sentiment, 
+                                'text'        : tweet.text,
+                                'created_at'  : tweet.createdAt,
+                                'screen_name' : tweet.screenName,
+                                'name'        : tweet.name, 
+                                'profile_image_url' : tweet.profileImageUrl
+                            };
 
-                        socket.broadcast.emit('twitter', parsedTweet);
-
+                            socket.broadcast.emit('twitter', parsedTweet);
+                        });;
                     });
                 } else {
                     //console.log("Rejected   ")

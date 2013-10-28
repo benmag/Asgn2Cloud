@@ -3,12 +3,11 @@
 <html>
 <head>
 <title>Twitter Stream</title>
-<?php include_once('./templates/head_tags.php'); ?>
+<link href="css/bootstrap.css" rel="stylesheet" media="screen">
+<link href="css/launchPage.css" rel="stylesheet"">
 </head>
 <body>
-<?php include_once('./templates/menu.php'); ?>
 <?php include_once('./templates/launch_form.php'); ?> 
-<?php include_once('./templates/footer.php'); ?>
 <!-- Only connect to the twitter channel on the index page -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>

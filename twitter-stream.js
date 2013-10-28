@@ -67,7 +67,7 @@ io.sockets.on('connection', function(socket) {
                 if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
                     // Tweet recieved, analyse sentiment 
                     request({
-                      uri: "http://joeBalance-80923684.us-west-2.elb.amazonaws.com/test.php",
+                      uri: "http://ec2-54-200-86-66.us-west-2.compute.amazonaws.com/test.php",
                       method: "POST",
                       form: {
                         'text'        : data.text,

@@ -55,15 +55,19 @@
 	        </div>
 
             <div class="span4">
-                <div class="widget">
+                <!--<div class="widget">
                     <div class="inner">
                         <input id="streamName" type="text" value=""  placeholder="Enter keyword/hashtag" />
                         <button class="btn btn-block btn-primary" type="button" onclick="launchStream();">Launch</button>
                         <button id="closeStream" class="btn btn-block btn-danger" type="button" onclick="closeStream();">Terminate Stream</button>
                         <small>Coming soon.</small>               
                     </div>
+                </div>-->
+                <div class="widget">
+                    <div class="inner">
+                        <iframe src="http://54.200.86.66/launch.php" seamless width="100%" height="110px"></iframe>
+                    </div>
                 </div>
-
                 <div class="widget">
                     <div class="inner">
 
@@ -109,7 +113,7 @@
 
     </div>
 <script type="text/javascript">
-var socket = io.connect('http://54.200.160.95:8080/');
+var socket = io.connect('http://54.200.86.66:8080/');
 var tweetCount = 0, 
     tweetsBefore = 0,
     tweetsAfter = 0,

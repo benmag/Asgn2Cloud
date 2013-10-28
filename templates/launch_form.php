@@ -1,4 +1,4 @@
-    <div class="container-fluid" id="stream_container" style="position:relative; margin-top:75px;">
+    <!--<div class="container-fluid" id="stream_container" style="position:relative; margin-top:75px;">
         <div class="row-fluid">
             <div id="search_container" class="span6 well" style="margin: 0 auto; float:none;">
                 <h2>Enter hashtag or search query</h2>
@@ -8,4 +8,8 @@
                 <button id="closeStream" class="btn btn-block btn-danger" type="button" onclick="closeStream();">Terminate Stream</button>
             </div>
         </div>
-    </div>
+    </div>-->
+<div id="centerMe"><input id="streamName" type="text" value=""  placeholder="Enter keyword/hashtag" /></div>
+<button class="btn btn-block btn-primary" type="button" onclick="launchStream();">Launch</button>
+<button id="closeStream" class="btn btn-block btn-danger" type="button" onclick="closeStream();">Terminate Stream</button>              
+    

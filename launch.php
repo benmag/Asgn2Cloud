@@ -4,7 +4,7 @@
 <head>
 <title>Twitter Stream</title>
 <link href="css/bootstrap.css" rel="stylesheet" media="screen">
-<link href="css/launchPage.css" rel="stylesheet"">
+<link href="css/launchPage.css" rel="stylesheet">
 </head>
 <body>
 <?php include_once('./templates/launch_form.php'); ?> 

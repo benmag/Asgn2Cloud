@@ -6,10 +6,11 @@ error_reporting(-1);
 
 //include the S3 class                
 if (!class_exists('S3'))require_once('S3.php');  
+require_once('config.php');
   
 //AWS access info  
-if (!defined('awsAccessKey')) define('awsAccessKey', 'AKIAJA3Z5IEYQCMVGXQQ');  
-if (!defined('awsSecretKey')) define('awsSecretKey', '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'); 
+if (!defined('awsAccessKey')) define('awsAccessKey', myAWSAccessKey);  
+if (!defined('awsSecretKey')) define('awsSecretKey', myAWSSecretKey); 
 
 //get the sentiment
 $myvars = 'txt='.urlencode($_REQUEST['text']);
@@ -27,7 +28,7 @@ $response = json_decode(curl_exec( $ch ));
 $s3 = new S3(awsAccessKey, awsSecretKey);  
 
 //create the bucket if it doesnt exist
-$bucketName = "joeMaher";
+$bucketName = BUCKET_NAME; 
 $s3->putBucket($bucketName, S3::ACL_PUBLIC_READ);
 
 //create the folder name
@@ -53,7 +54,7 @@ $tweetArray = array("text" => $text, "sentiment" => $sentiment, "createdAt" => $
 $s3->putObject(json_encode($tweetArray), $bucketName, $uploadName, S3::ACL_PUBLIC_READ, array(), array('Content-Type' => 'text/plain'));
 
 //echo url of json file
-echo "https://s3.amazonaws.com/joeMaher/" . $uploadName;
+echo "https://s3.amazonaws.com/".$bucketName"/" . $uploadName;
 
 //adds leading zeroes to ensure numerical order in the file names
 function addLeadingZeroes($number){   

@@ -1,0 +1,13 @@
+						<div class=\"chat-message\" id=\"tw"+tweetCount+"\">\
+                            <div class=\"sender pull-left\">\
+                                <div class=\"icon\">\
+                                    <img src=\""+data.profile_image_url+"\" alt=\"\" width=\"50\" height=\"50\">\
+                                </div>\
+                                <div class=\"time\">"+data.created_at+"</div>\
+                            </div>\
+                            <div class=\"chat-message-body "+data.sentiment+"\">\
+                                <span class=\"arrow\"></span>\
+                                <div class=\"sender\"><a href=\"http://twitter.com/"+data.screen_name+"\">"+data.name+"</a></div>\
+                                <div class=\"text\">"+data.text+"</div>\
+                            </div>\
+                        </div>\

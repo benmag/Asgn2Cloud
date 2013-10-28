@@ -2,6 +2,7 @@ HOW IT WORKS:
 I have two types on instances: 
 	- Node Server
 	- Sentiment Processor(s) (these scale up/down)
+	- Node server points to a Load Balancer and that decides which Sentiment Processor to point to 
 
 
 ## FIRST 

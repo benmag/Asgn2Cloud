@@ -65,33 +65,26 @@ io.sockets.on('connection', function(socket) {
 
                 // Only parse tweets, not retweets and replies
                 if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
-                    // Tweet recieved, analyse sentiment 
-                    request({
-                      uri: "http://ec2-54-200-86-66.us-west-2.compute.amazonaws.com/sentiment.php",
-                      method: "POST",
-                      form: {
+                    
+                    var parsedTweet = {
                         'text'        : data.text,
                         'created_at'  : data.created_at,
                         'screen_name' : data.user.screen_name,
                         'name'        : data.user.name, 
                         'profile_image_url' : data.user.profile_image_url,
                         'searchTerm'  : watchList
-                      }
+                    };
+
+                    // Tweet recieved, send it to our sentiment instance
+                    request({
+                      uri: "http://CloudComputingLB-196057872.us-west-2.elb.amazonaws.com/sentiment.php",
+                      method: "POST",
+                      form: parsedTweet,
                         
                     }, function(error, response, body) {
+                        
+                        console.log(body);
 
-                       $.getJSON(body, function(tweet) {
-                            var parsedTweet = {
-                                'sentiment'   : tweet.sentiment, 
-                                'text'        : tweet.text,
-                                'created_at'  : tweet.createdAt,
-                                'screen_name' : tweet.screenName,
-                                'name'        : tweet.name, 
-                                'profile_image_url' : tweet.profileImageUrl
-                            };
-
-                            socket.broadcast.emit('twitter', parsedTweet);
-                        });
                     });
                 } else {
                     //console.log("Rejected   ")
@@ -113,17 +106,12 @@ io.sockets.on('connection', function(socket) {
 
 
     /*///////////////// BROADCAST TWEETS ///////////////////
-    When the a twitter stream is opened (via the stream 
-    controller) every time the tweet callback is triggered,
-    it emits tweet data to the broadcasting center which then
-    forwards them on to all connected clients listening to 
-    our channel
+    The sentiment.php file broadcasts the processed tweet 
+    back to the node server. This then broadcasts the 
+    message to all connected clients listening to our room
     //////////////////////////////////////////////////////*/
-
-    // Handle client request join channel and track stream
     socket.on('broadcast_twitter', function(data) {
-        console.log(" \n ------ RECIEVED TWQEET -------\n")
-        socket.emit('twitter',data);
+        socket.broadcast.emit('twitter', data);
     });
 
 });

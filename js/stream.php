@@ -4,7 +4,7 @@ require_once('../config.php');
 ?>
 
 // Connect to our socket port so we can send/recieve in real time
-var socket = io.connect('<?php echo NODE_SERVER; ?>');
+var socket = io.connect('<?php echo NODE_SERVER; ?>/');
 
 
 // Variable setup 
@@ -47,7 +47,7 @@ socket.on('twitter', function(data) {
     $('.twitter_feed').prepend("<div class=\"chat-message\">\
                             <div class=\"sender pull-left\">\
                                 <div class=\"icon\">\
-                                    <img src=\""+data.profile_image_url+"\" alt=\"\" width=\"50\" height=\"50\" class=\"img-circle\">\
+                                    <img src=\""+data.profileImageUrl+"\" alt=\"\" width=\"50\" height=\"50\" class=\"img-circle\">\
                                 </div>\
                                 <div class=\"time\"></div>\
                             </div>\

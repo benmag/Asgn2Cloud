@@ -15,7 +15,7 @@
 <script src="js/bootstrap.min.js"></script>
 
 <!-- Socket.io -->
-<script src="<?php echo NODE_SERVER; ?>socket.io/socket.io.js"></script>
+<script src="<?php echo NODE_SERVER; ?>/socket.io/socket.io.js"></script>
 <script src="js/stream.php"></script>
 
 <script type="text/javascript" src="js/plugins/charts/excanvas.min.js"></script>

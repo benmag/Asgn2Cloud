@@ -2,7 +2,7 @@
 Header("content-type: application/x-javascript");
 require_once('../config.php');
 ?>
-var socket = io.connect('<?php echo NODE_SERVER; ?>');
+var socket = io.connect('<?php echo NODE_SERVER; ?>/');
 
 
 function launchStream() {

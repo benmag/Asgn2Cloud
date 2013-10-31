@@ -1,35 +1,38 @@
 <?php
-/**
- * Storage class 
- * Store processed tweets, retrieve processed tweets. 
- *
- * We are using S3 for storage because it's not designed to store things so
- * it'll use more resources than a normal DB, forcing scaling to occur faster
- */
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+
+use Aws\SimpleDb\SimpleDbClient;
+use Aws\DynamoDb\DynamoDbClient;
 
 class storage { 
 
-	var $bucketName; // name of the bucket we're storing stuff in
-	var $s3; // S3 object 
+	//var $bucketName; // name of the bucket we're storing stuff in
+	var $sdb; // simple db
+        var $ddb; //dyanmo db
 
 	/** 
 	 * Get everything setup 
 	 * 
 	 * @return void
 	 */
+        
 	function __construct() {
 
-		require_once(dirname(__FILE__)."/../../config.php");
-		require_once(dirname(__FILE__)."/S3.php");
+		require_once(dirname(__FILE__)."/../../vendor/autoload.php");
+                require_once(dirname(__FILE__)."/../../config.php");
 
-		// Setup vars
-		$this->bucketName = BUCKET_NAME;
-
-		// Setup S3 storage object
-		$this->s3 = new S3(myAWSAccessKey, myAWSSecretKey); 
-
-		// If the bucket doesn't exist, make it.
-		$this->s3->putBucket($this->bucketName, S3::ACL_PUBLIC_READ);
+		/*$this->sdb = SimpleDbClient::factory(array(
+                    'key'    => myAWSAccessKey,
+                    'secret' => myAWSSecretKey,
+                    'region' => 'us-west-2'
+                ));*/
+                
+                $this->ddb = DynamoDbClient::factory(array(
+                    'key'    => myAWSAccessKey,
+                    'secret' => myAWSSecretKey,
+                    'region' => 'us-west-2'
+                ));
 
 	}
 
@@ -39,54 +42,31 @@ class storage {
 	 * @param $tweetData - array containing all the tweet data we want to store
 	 * @return string S3 storage location
 	 */
+        
 	public function put_tweet($searchTerm, $tweetData) {
 
-		$streamNumber = sizeof($this->s3->getBucket($this->bucketName, $searchTerm . 'Stream', null, null, '/')) + 1;
-		$folderName = $searchTerm. 'Stream' . $streamNumber . '/';
-		  
-		//create the filename, unique key is used incase the previous file has not finished uploading. Avoids name conflicts
-		$tweetNumber = sizeof($this->s3->getBucket($this->bucketName, $folderName)) + 1;
-		$uploadName = $folderName . "tweet" . $this->addLeadingZeroes($tweetNumber) . "_" . $this->generateUniqueTweetId() . ".json";
+                /*$this->sdb->putAttributes(array(
+                    'DomainName' => $this->getDomain(),
+                    'ItemName'   => 'tweet' . $this->generateUniqueTweetId(),
+                    'Attributes' => array(
+                        array('Name' => 'text', 'Value' => $tweetData['text']),
+                        array('Name' => 'sentiment', 'Value' => $tweetData['sentiment']),
+                        array('Name' => 'createdA', 'Value' => $tweetData['createdAt']),
+                        array('Name' => 'screenName', 'Value' => $tweetData['screenName']),
+                        array('Name' => 'name', 'Value' => $tweetData['name']),
+                        array('Name' => 'profileImageUrl', 'Value' => $tweetData['profileImageUrl']),
+                        array('Name' => 'searchTerm', 'Value' => $tweetData['searchTerm'])
+                    )
+                ));*/
+            $time = time();
 
-		//push json object to s3
-		$this->s3->putObject(json_encode($tweetData), $this->bucketName, $uploadName, S3::ACL_PUBLIC_READ, array(), array('Content-Type' => 'text/plain'));
-
-		return "https://s3.amazonaws.com/".$this->bucketName."/" . $uploadName;
-
-	}
-
-
-	/** 
-	 * Grab a tweet from storage
-	 * 
-	 * @return json of tweet 
-	 */
-	public function get_tweet($tweetFile) {
-
-	}
-
-
-
-	/** 
-	 * Add leading zeros  to ensure numerical order in the file names
-	 * 
-	 * @param $number
-	 * @return int
-	 */
-	private function addLeadingZeroes($number){   
-	    switch ($number){
-	        case $number < 10:
-	            return "000" . $number;
-	            break;
-	        case $number < 100:
-	            return "00" . $number;
-	            break;
-	        case $number < 1000:
-	            return "0" . $number;
-	            break;        
-	    }
-	    
-	    return $number;
+            $this->ddb->putItem(array(
+                'TableName' => 'joeTweets',
+                'Item' => array(
+                    'id'      => array('N' => '1201'),
+                    'time'    => array('N' => $time)
+            )
+            ));
 	}
 
 
@@ -95,6 +75,7 @@ class storage {
 	 * 
 	 * @return random string
 	 */
+        
 	private function generateUniqueTweetId() {
 	 	
 	 	// List of characters
@@ -102,12 +83,18 @@ class storage {
 	    $randomString = '';
 
 	    // Pick random ones 
-	    for ($i = 0; $i < 20; $i++) {
+	    for ($i = 0; $i < 10; $i++) {
 	        $randomString .= $characters[rand(0, strlen($characters) - 1)];
 	    }
 
 	    return $randomString;
 	}
+        
+        private function getDomain(){
+            $int = rand(1, 25);
+            return 'tweets' . $int;
+        }
 
 
-} 
+}
+?>

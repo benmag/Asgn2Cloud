@@ -69,7 +69,7 @@ io.sockets.on('connection', function(socket) {
             currentTwitStream = stream;
 
             // Tweet recieved
-            stream.on('data',function(data) 
+            stream.on('data',function(data) {
                 
                 // Increase tweet count for tweet counter
                 socket.broadcast.emit('count_tweet', "tweet");

@@ -91,7 +91,6 @@ io.sockets.on('connection', function(socket) {
                     
                     var item = {
                         "id": {"S": makeid()},
-                        "time": {"S": "11111111"},
                         'text'        : {"S": nullifyValue(data.text)},
                         'created_at'  : {"S": nullifyValue(data.created_at)},
                         'screen_name' : {"S": nullifyValue(data.user.screen_name)},

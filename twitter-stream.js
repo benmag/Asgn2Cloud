@@ -7,17 +7,31 @@ var app = require('http').createServer(handler)
   , twitter = require('ntwitter')
   , request = require('request')
   , util = require('util')
+  , AWS = require('aws-sdk')
   , $ = require('jquery');
   
-
+var config = {
+    consumerKey : 'Buvs1eLOiIOL4VsLiT2w',
+    consumerSecret : 'EkQVvWrLCabWSCqYeijrZu1LGtshjrDaSJweojKQw',
+    accessTokenKey : '1960038625-6zZJRNrzUwk1LLFH5jPuZ1geskwOIyJPKkB553R',
+    accessTokenSecret : 'F9UwB62DWUruI7EwM28FCkBBiZVECqEfMVkTIbf4nY',
+    sentimentLocation : 'http://ec2-54-200-124-199.us-west-2.compute.amazonaws.com/sentiment.php',
+    tableName : 'joeTweets'
+}
+  
+AWS.config.loadFromPath('./awsConfig.json');
+var dynamodb = new AWS.DynamoDB();
+var tweetsPerMinute = 0;
+var previousTweetsPerMinute = new Array();
+var timer = setInterval(function(){calculateTweetsPerMinute()}, 60000);
+var scaler = setInterval(function(){doScaling()}, 300000);
 
 var twit = new twitter({
-  consumer_key: 'XQQyEKInyk3jSQCazbyFEQ',
-  consumer_secret: 'J4Kd7qSKUYf1U6zZi2oP6ap5uavv0tt6csKZv6vnXyY',
-  access_token_key: '1003676713-HxsKqgUIfNsfvIQAvVRKxU77qGVE9BpgTwJQfMy',
-  access_token_secret:'DHzE1vishw0WBksk6dXmTSqXfeE4qRmPv9aD0P1u6xU'
+  consumer_key: config.consumerKey,
+  consumer_secret: config.consumerSecret,
+  access_token_key: config.accessTokenKey,
+  access_token_secret: config.accessTokenSecret
 });
-
 
 app.listen(8080);
 
@@ -74,17 +88,34 @@ io.sockets.on('connection', function(socket) {
                         'profile_image_url' : data.user.profile_image_url,
                         'searchTerm'  : watchList
                     };
+                    
+                    var item = {
+                        "id": {"S": makeid()},
+                        "time": {"S": "11111111"},
+                        'text'        : {"S": nullifyValue(data.text)},
+                        'created_at'  : {"S": nullifyValue(data.created_at)},
+                        'screen_name' : {"S": nullifyValue(data.user.screen_name)},
+                        'name'        : {"S": nullifyValue(data.user.name)}, 
+                        'profile_image_url' : {"S": nullifyValue(data.user.profile_image_url)},
+                        'searchTerm'  : {"S": nullifyValue(watchList)}
+                    }
+                    
+                    tweetsPerMinute++;
+                    
+                    dynamodb.putItem({TableName: config.tableName, Item: item}, function(err, data){
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
 
                     // Tweet recieved, send it to our sentiment instance
                     request({
-                      uri: "http://CloudComputingLB-196057872.us-west-2.elb.amazonaws.com/sentiment.php",
+                      uri: config.sentimentLocation,
                       method: "POST",
                       form: parsedTweet,
                         
                     }, function(error, response, body) {
                         
-                        console.log(body);
-
                     });
                 } else {
                     //console.log("Rejected   ")
@@ -115,3 +146,66 @@ io.sockets.on('connection', function(socket) {
     });
 
 });
+
+function makeid(){
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 20; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
+function calculateTweetsPerMinute(){
+    previousTweetsPerMinute.unshift(tweetsPerMinute);
+    if (previousTweetsPerMinute.length > 5){
+        previousTweetsPerMinute.pop();
+    }
+    tweetsPerMinute = 0;
+}
+
+function doScaling(){
+    dynamodb.describeTable({TableName: config.tableName}, function(err, data){
+        if (err) {
+            console.log(err); // an error occurred
+        } else {
+            var writeCapacity = data.Table.ProvisionedThroughput.WriteCapacityUnits;
+            var totalTweetsOver5Minutes = 0;
+            var averageTweetsPerSecond = 0;
+            
+            for (i = 0; i < previousTweetsPerMinute.length; i++){
+                totalTweetsOver5Minutes += previousTweetsPerMinute[i];
+            }
+            
+            averageTweetsPerSecond = totalTweetsOver5Minutes / (previousTweetsPerMinute.length * 60);
+            
+            if (writeCapacity < averageTweetsPerSecond ){
+                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: averageTweetsPerSecond, WriteCapacityUnits: averageTweetsPerSecond}}, function(err, data){
+                    console.log("TRIED TO SCALE UP");
+                    if (err) {
+                        //console.log(err); // an error occurred
+                    } else {
+                        //console.log("I SCALED UP");
+                    }
+                });
+            } else if (writeCapacity > averageTweetsPerSecond ){
+                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: averageTweetsPerSecond,WriteCapacityUnits: averageTweetsPerSecond}}, function(err, data){
+                    if (err) {
+                        //console.log(err); // an error occurred
+                    } else {
+                        //console.log("I SCALED DOWN");
+                    }
+                });
+            }
+        }
+    });
+}
+
+function nullifyValue(value){
+    if (value === ''){
+        return "null";
+    } else {
+        return value;
+    }
+}

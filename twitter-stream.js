@@ -69,10 +69,13 @@ io.sockets.on('connection', function(socket) {
             currentTwitStream = stream;
 
             // Tweet recieved
-            stream.on('data',function(data) {
-
-                // Only parse tweets, not retweets and replies
-                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
+            stream.on('data',function(data) 
+                
+                // Increase tweet count for tweet counter
+                socket.broadcast.emit('count_tweet', "tweet");
+                
+                // Only parse english tweets, not retweets and replies
+                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT "  && data.lang == "en") {
                     
                     var parsedTweet = {
                         'text'        : data.text,

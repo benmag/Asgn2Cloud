@@ -17,12 +17,15 @@ var tweetCount = 0,
     tweetHistorySize = 100; // How many tweets to show in the twitter feed at one given time
 
 
-// Listen for a 'twitter' message to be broadcasted   
-socket.on('twitter', function(data) {
-
-    // update our total tweet count and show it
+// Listen for a 'count_tweet' trigger
+socket.on('count_tweet', function(data) {
     tweetCount++;
     $("#total_tweets").html(tweetCount);
+});
+    
+
+// Listen for a 'twitter' message to be broadcasted   
+socket.on('twitter', function(data) {
 
     // Update the sentiment counts
     switch(data.sentiment) {
@@ -197,5 +200,4 @@ $(function () {
 
 
 });
-
 

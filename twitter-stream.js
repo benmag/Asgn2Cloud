@@ -10,14 +10,8 @@ var app = require('http').createServer(handler)
   , AWS = require('aws-sdk')
   , $ = require('jquery');
   
-var config = {
-    consumerKey : 'Buvs1eLOiIOL4VsLiT2w',
-    consumerSecret : 'EkQVvWrLCabWSCqYeijrZu1LGtshjrDaSJweojKQw',
-    accessTokenKey : '1960038625-6zZJRNrzUwk1LLFH5jPuZ1geskwOIyJPKkB553R',
-    accessTokenSecret : 'F9UwB62DWUruI7EwM28FCkBBiZVECqEfMVkTIbf4nY',
-    sentimentLocation : 'http://ec2-54-200-124-199.us-west-2.compute.amazonaws.com/sentiment.php',
-    tableName : 'joeTweets'
-}
+var config = require('./node_config.json');
+
   
 AWS.config.loadFromPath('./awsConfig.json');
 var dynamodb = new AWS.DynamoDB();

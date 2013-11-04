@@ -1,4 +1,12 @@
-<?php require_once('config.php'); ?>
+<?php 
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+
+use Aws\DynamoDb\DynamoDbClient;
+
+require_once('config.php');
+require_once(dirname(__FILE__)."/vendor/autoload.php");
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,7 +56,47 @@
                         </div>
 
                         <div class="twitter_feed">
+                            <?php 
+                                $ddb = DynamoDbClient::factory(array(
+                                    'key'    => 'AKIAJHPGFCQYS4DZU35Q',
+                                    'secret' => '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',
+                                    'region' => 'us-west-2'
+                                ));
 
+                                $iterator = $ddb->getIterator('Query', array(
+                                    'TableName'     => 'joeTweets',
+                                    'KeyConditions' => array(
+                                        'id' => array(
+                                            'AttributeValueList' => array(
+                                                array('S' => 'tweet')
+                                            ),
+                                            'ComparisonOperator' => 'EQ'
+                                        ),
+                                        'time' => array(
+                                            'AttributeValueList' => array(
+                                                array('N' => strtotime("-120 minutes"))
+                                            ),
+                                            'ComparisonOperator' => 'GT'
+                                        )
+                                    )
+                                ));
+
+                                foreach ($iterator as $item) {
+                                    echo "<div class='chat-message'>";
+                                    echo "<div class='sender pull-left'>";
+                                    echo "<div class='icon'>";
+                                    echo "<img src='" . $item['profile_image_url']['S'] . "' alt='' width='50' height='50' class=img-circle>";
+                                    echo "</div>";
+                                    echo "<div class='time'></div>";
+                                    echo "</div>";
+                                    echo "<div class='chat-message-body " . $item['sentiment']['S'] . "'> <span class='arrow'></span>";
+                                    echo "<div class='sender'><a href='http://twitter.com/" . $item['screen_name']['S'] . "'>" . $item['name']['S'] . "</a>";
+                                    echo "</div>";
+                                    echo "<div class='text'>" .$item['text']['S'] . "</div>";
+                                    echo "</div>";
+                                    echo "</div>";
+                                }
+                            ?>
                         </div>
                     </div>
                 </div>

@@ -59,8 +59,10 @@ socket.on('twitter', function(data) {
     $("#analysedCount").html(analysedCount);
 
     // Reduce the backlog by 1
-    backlogCount--;
-    $("#backlog_count").html(backlogCount);
+    if(backlogCount > 0) {
+        backlogCount--;
+        $("#backlog_count").html(backlogCount);
+    }
 
     // Add the tweet to the twitter feed
     $('.twitter_feed').prepend("<div class=\"chat-message\">\

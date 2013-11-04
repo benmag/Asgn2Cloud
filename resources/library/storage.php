@@ -42,7 +42,7 @@ class storage {
             $this->ddb->putItem(array( //storing random data at the moment
                 'TableName' => tableName,
                 'Item' => array(
-                    'id'                => array('S' => $this->generateUniqueTweetId()),
+                    'id'                => array('S' => "tweet"),
                     'time'              => array('N' => time()),
                     'text'              => array('S' => $this->nullifyValue($tweetData['text'])),
                     'sentiment'         => array('S' => $this->nullifyValue($tweetData['sentiment'])),

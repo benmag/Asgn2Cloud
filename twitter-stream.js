@@ -2,7 +2,7 @@
 // Source: https://github.com/tariknz/nodejs-twitter-stream
 // Utilizes: https://npmjs.org/package/twitter
 var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
+  , io = require('socket.io').listen(app, { log: false })
   , fs = require('fs')
   , twitter = require('ntwitter')
   , request = require('request')
@@ -12,13 +12,13 @@ var app = require('http').createServer(handler)
   
 var config = require('./node_config.json');
 
-  
+io.set('log level', 1);  
 AWS.config.loadFromPath('./awsConfig.json');
 var dynamodb = new AWS.DynamoDB();
 var tweetsPerMinute = 0;
 var previousTweetsPerMinute = new Array();
 var timer = setInterval(function(){calculateTweetsPerMinute()}, 60000);
-var scaler = setInterval(function(){doScaling()}, 300000);
+var scaler = setInterval(function(){doScaling()}, 120000);
 
 var twit = new twitter({
   consumer_key: config.consumerKey,
@@ -75,7 +75,7 @@ io.sockets.on('connection', function(socket) {
                 socket.broadcast.emit('count_tweet', "tweet");
                 
                 // Only parse english tweets, not retweets and replies
-                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT " && data.lang == "en") {
+                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT ") {
                     
                     // Count the tweets waiting to be processed 
                     socket.broadcast.emit('count_tweet_backlog', "tweet");
@@ -89,7 +89,7 @@ io.sockets.on('connection', function(socket) {
                         'searchTerm'  : watchList
                     };
                     
-                    var item = {
+                    /*var item = {
                         "id": {"S": makeid()},
                         "time"  :    {"S": "1111111111"},
                         'text'        : {"S": nullifyValue(data.text)},
@@ -98,15 +98,15 @@ io.sockets.on('connection', function(socket) {
                         'name'        : {"S": nullifyValue(data.user.name)}, 
                         'profile_image_url' : {"S": nullifyValue(data.user.profile_image_url)},
                         'searchTerm'  : {"S": nullifyValue(watchList)}
-                    }
+                    }*/
                     
                     tweetsPerMinute++;
                     
-                    dynamodb.putItem({TableName: config.tableName, Item: item}, function(err, data){
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
+                    //dynamodb.putItem({TableName: config.tableName, Item: item}, function(err, data){
+                        //if (err) {
+                            //console.log(err);
+                        //}
+                    //});
 
                     // Tweet recieved, send it to our sentiment instance
                     request({
@@ -180,21 +180,20 @@ function doScaling(){
             
             averageTweetsPerSecond = totalTweetsOver5Minutes / (previousTweetsPerMinute.length * 60);
             
-            if (writeCapacity < averageTweetsPerSecond ){
-                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: averageTweetsPerSecond, WriteCapacityUnits: averageTweetsPerSecond}}, function(err, data){
-                    console.log("TRIED TO SCALE UP");
+            if (writeCapacity < Math.round(averageTweetsPerSecond) ){
+                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond), WriteCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
                     if (err) {
-                        //console.log(err); // an error occurred
+                        console.log(err); // an error occurred
                     } else {
-                        //console.log("I SCALED UP");
+                        console.log("I SCALED UP");
                     }
                 });
-            } else if (writeCapacity > averageTweetsPerSecond ){
-                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: averageTweetsPerSecond,WriteCapacityUnits: averageTweetsPerSecond}}, function(err, data){
+            } else if (writeCapacity > Math.round(averageTweetsPerSecond) ){
+                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond),WriteCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
                     if (err) {
-                        //console.log(err); // an error occurred
+                        console.log(err); // an error occurred
                     } else {
-                        //console.log("I SCALED DOWN");
+                        console.log("I SCALED DOWN");
                     }
                 });
             }
@@ -202,10 +201,37 @@ function doScaling(){
     });
 }
 
-function nullifyValue(value){
+function scaleUpBy(writeCapacity, averageTweetsPerSecond){
+    var maxCapacity = writeCapacity * 2;
+    
+    if (maxCapacity >= Math.round(averageTweetsPerSecond)){
+        return Math.round(averageTweetsPerSecond);
+    } else {
+        return maxCapacity;
+    }
+}
+
+function scaleDownBy(writeCapacity, averageTweetsPerSecond){
+    var minCapacity = writeCapacity / 2;
+    var capacityToRequest;
+    
+    if (minCapacity <= Math.round(averageTweetsPerSecond)){
+        capacityToRequest = Math.round(averageTweetsPerSecond);
+    } else {
+        capacityToRequest = minCapacity;
+    }
+    
+    if (capacityToRequest < 1){
+        capacityToRequest = 1;
+    }
+    
+    return capacityToRequest;
+}
+
+/*function nullifyValue(value){
     if (value === ''){
         return "null";
     } else {
         return value;
     }
-}
+}*/

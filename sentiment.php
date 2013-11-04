@@ -6,7 +6,9 @@ if(!isset($_REQUEST['text'])) exit("Health check. Status OK.");
 if(!isset($_REQUEST['text']) || !isset($_REQUEST['screen_name']) || !isset($_REQUEST['searchTerm'])) exit("Insufficient data provided");
 require_once('resources/library/sentiment.php');
 require_once('resources/library/broadcast.php');
+require_once('resources/library/storage.php');
 $sentiment = new sentiment(); // sentiment analysis object
+$storage = new storage();
 $broadcast = new broadcast();
 
 
@@ -35,6 +37,6 @@ $tweetArray = array(
 $broadcast->send($tweetArray);
 
 // Store file. WE DONT STORE FILES HERE ANYMORE
-//echo "File stored: ". $storage->put_tweet($searchTerm, $tweetArray);
+echo "File stored: ". $storage->put_tweet($searchTerm, $tweetArray);
 
 ?>

@@ -180,22 +180,21 @@ function doScaling(){
             
             averageTweetsPerSecond = totalTweetsOver5Minutes / (previousTweetsPerMinute.length * 60);
             
-            if (writeCapacity < Math.round(averageTweetsPerSecond) ){
-                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond), WriteCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
-                    if (err) {
-                        console.log(err); // an error occurred
-                    } else {
-                        console.log("I SCALED UP");
-                    }
-                });
-            } else if (writeCapacity > Math.round(averageTweetsPerSecond) ){
-                dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond),WriteCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
-                    if (err) {
-                        console.log(err); // an error occurred
-                    } else {
-                        console.log("I SCALED DOWN");
-                    }
-                });
+            if (totalTweetsOver5Minutes != 0 && writeCapacity != 1){ //stop it form scaling when nothing is happening
+            
+                if (writeCapacity < Math.round(averageTweetsPerSecond) ){
+                    dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond), WriteCapacityUnits: scaleUpBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
+                        if (err) {
+                            console.log(err); // an error occurred
+                        } 
+                    });
+                } else if (writeCapacity > Math.round(averageTweetsPerSecond) ){
+                    dynamodb.updateTable({TableName: config.tableName, ProvisionedThroughput: {ReadCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond),WriteCapacityUnits: scaleDownBy(writeCapacity, averageTweetsPerSecond)}}, function(err, data){
+                        if (err) {
+                            console.log(err); // an error occurred
+                        } 
+                    });
+                }
             }
         }
     });

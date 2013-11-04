@@ -11,9 +11,11 @@ var socket = io.connect('<?php echo NODE_SERVER; ?>/');
 var tweetCount = 0, 
     tweetsBefore = 0, // allows us to track tweets per x 
     tweetsAfter = 0,
+    maxTweetSpeed = 10, // use this to make the y axis
     posCount = 1, // Number of positive tweets
     negCount = 1, // Number of negative tweets
     neuCount = 1, // Number of neutral tweets
+    analysedCount = 0, // number of tweets with their sentiment analysed 
     tweetHistorySize = 100; // How many tweets to show in the twitter feed at one given time
 
 
@@ -44,6 +46,9 @@ socket.on('twitter', function(data) {
             $("#negCount").html(negCount);
         break;
     }
+    
+    analysedCount++;
+    $("#analysedCount").html(analysedCount);
 
 
     // Add the tweet to the twitter feed
@@ -71,7 +76,7 @@ socket.on('twitter', function(data) {
 
 $(function () {
     
-    var data = [], totalPoints = 300;
+    var data = [], totalPoints = 200;
     var tweetSpeed = 0;
     
     function getGraphData() {
@@ -111,8 +116,8 @@ $(function () {
     // setup plot
     var options = {
         series: { shadowSize: 0 }, // drawing is faster without shadows
-        yaxis: { min: 0, max: 100 },
-        xaxis: { show: false }
+        yaxis: { min: 0, max: maxTweetSpeed },
+        xaxis: { show: false },
     };
 
     var plot = $.plot($("#tweetGraph"), [ getGraphData() ], options);
@@ -167,8 +172,17 @@ $(function () {
         // Update value 
         $("#tweetSpeed").html(tweetSpeed);
 
+        // Check if the tweet speed is the fastest we've seen yet. Update the maxTweetSpeed if needed
+        if(tweetSpeed > maxTweetSpeed) maxTweetSpeed = tweetSpeed;
 
-        plot.setData([ getGraphData() ]);
+        var options = {
+            series: { shadowSize: 0 }, // drawing is faster without shadows
+            yaxis: { min: 0, max: maxTweetSpeed },
+            xaxis: { show: false },
+        };
+
+        var plot = $.plot($("#tweetGraph"), [ getGraphData() ], options);
+        //plot.setData([ getGraphData() ]);
         // since the axes don't change, we don't need to call plot.setupGrid()
         plot.draw();
 

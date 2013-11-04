@@ -75,7 +75,10 @@ io.sockets.on('connection', function(socket) {
                 socket.broadcast.emit('count_tweet', "tweet");
                 
                 // Only parse english tweets, not retweets and replies
-                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT "  && data.lang == "en") {
+                if(data.in_reply_to_status_id == null && data.retweeted == false && data.text.substr(0, 3) != "RT " && data.lang == "en") {
+                    
+                    // Count the tweets waiting to be processed 
+                    socket.broadcast.emit('count_tweet_backlog', "tweet");
                     
                     var parsedTweet = {
                         'text'        : data.text,
@@ -88,6 +91,7 @@ io.sockets.on('connection', function(socket) {
                     
                     var item = {
                         "id": {"S": makeid()},
+                        "time"  :    {"S": "1111111111"},
                         'text'        : {"S": nullifyValue(data.text)},
                         'created_at'  : {"S": nullifyValue(data.created_at)},
                         'screen_name' : {"S": nullifyValue(data.user.screen_name)},

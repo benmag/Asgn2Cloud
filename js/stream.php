@@ -16,6 +16,7 @@ var tweetCount = 0,
     negCount = 1, // Number of negative tweets
     neuCount = 1, // Number of neutral tweets
     analysedCount = 0, // number of tweets with their sentiment analysed 
+    backlogCount = 0, // number of tweets waiting for processing 
     tweetHistorySize = 100; // How many tweets to show in the twitter feed at one given time
 
 
@@ -23,6 +24,12 @@ var tweetCount = 0,
 socket.on('count_tweet', function(data) {
     tweetCount++;
     $("#total_tweets").html(tweetCount);
+});
+
+// Listen for a 'count_tweet_backlog' trigger - how many tweets are waiting to be processed
+socket.on('count_tweet_backlog', function(data) {
+    backlogCount++;
+    $("#backlog_count").html(backlogCount);
 });
     
 
@@ -47,9 +54,13 @@ socket.on('twitter', function(data) {
         break;
     }
     
+    // Update processed tweets tracker
     analysedCount++;
     $("#analysedCount").html(analysedCount);
 
+    // Reduce the backlog by 1
+    backlogCount--;
+    $("#backlog_count").html(backlogCount);
 
     // Add the tweet to the twitter feed
     $('.twitter_feed').prepend("<div class=\"chat-message\">\

@@ -30,7 +30,7 @@
                 <div class="widget">
     	            <div class="inner">
     	                <div class="title">
-    	                	<h4>Tweets <small></small></h4>
+    	                	<h4>Tweets <small>pre-processing</small></h4>
     	                </div>
 
     	                <div class="body no-margin">
@@ -44,7 +44,7 @@
                 <div class="widget">
                     <div class="inner">
                         <div class="title">
-                            <h4>Twitter Feed</h4>
+                            <h4>Twitter Feed <small class="display:none;">Tweets will keep appearing until the backlog is cleared</small></h4>
                         </div>
 
                         <div class="twitter_feed">
@@ -84,6 +84,10 @@
                                 <td>Negative</td>
                                 <td><span id="negCount">0</span></td>
                             </tr>
+                            <tr>
+                                <td>Analysed Tweets</td>
+                                <td><span id="analysedCount">0</span></td>
+                            </tr>
                         </table>
                         <hr />
                         <table style="width:100%;"> 
@@ -92,10 +96,24 @@
                                 <td><span id="tweetSpeed">0</span></td>
                             </tr>
                             <tr>
+                                <td>Waiting for Analysis</td>
+                                <td><span id="backlog_count">0</span></td>
+                            </tr>
+                            <tr>
                                 <td>Total Tweets</td>
                                 <td><span id="total_tweets">0</span></td>
                             </tr>
+                            
+                            
                         </table>
+                    </div>
+                </div>
+                <div class="widget">
+                    <div class="inner">
+                        <br />
+                        <p>* Tweet speed is calculated from the twitter stream it so <b>will</b> be different to the speed of the analysed tweets</p>
+                        <p>* Not all "tweets" get their sentiment processed - replies, retweets and non-english tweets are all ignored</p>
+                        <p align="center"><small>Created by Ben and Joe</small></p>
                     </div>
                 </div>
             </div>
